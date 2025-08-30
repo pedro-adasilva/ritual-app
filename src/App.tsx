@@ -1,6 +1,15 @@
-import React, { useState } from "react";
+// src/App.tsx
+import { useState } from "react";
 
-const HABITS = [
+type Section = "Al despertar" | "Durante el día" | "Al acostarse";
+
+interface Habit {
+  id: string;
+  title: string;
+  section: Section;
+}
+
+const HABITS: Habit[] = [
   { id: "h1", title: "Respiraciones conscientes al despertar", section: "Al despertar" },
   { id: "h2", title: "Lista de 3 prioridades del día", section: "Al despertar" },
   { id: "h3", title: "Pausa de mindfulness (5 min)", section: "Durante el día" },
@@ -12,71 +21,90 @@ const HABITS = [
   { id: "h9", title: "Escribir en diario nocturno", section: "Al acostarse" },
 ];
 
-const SECTIONS = ["Al despertar", "Durante el día", "Al acostarse"];
+const SECTIONS: Section[] = ["Al despertar", "Durante el día", "Al acostarse"];
 
-export default function App() {
-  const [progress, setProgress] = useState({});
-  const [streak, setStreak] = useState(0);
-  const [points, setPoints] = useState(0);
-  const [badges, setBadges] = useState([]);
+type Progress = Record<string, boolean>;
 
-  const toggleHabit = (id) => {
+export default function MentalHabitsMVP() {
+  const [progress, setProgress] = useState<Progress>({});
+  const [streak, setStreak] = useState<number>(0);
+  const [points, setPoints] = useState<number>(0);
+  const [badges, setBadges] = useState<string[]>([]);
+
+  const toggleHabit = (id: string) => {
     setProgress((prev) => {
-      const done = { ...prev, [id]: !prev[id] };
-      const completed = Object.values(done).filter(Boolean).length;
+      const next: Progress = { ...prev, [id]: !prev[id] };
+      const completed = Object.values(next).filter(Boolean).length;
+
+      // puntos
       setPoints(completed * 10);
-      checkBadges(done);
-      return done;
+
+      // racha (simplificada para MVP: si hoy >=6, cuenta como día “ok”)
+      setStreak((prevStreak) => (completed >= 6 ? Math.max(prevStreak, 1) : prevStreak));
+
+      // insignias
+      checkBadges(next);
+      return next;
     });
   };
 
-  const checkBadges = (done) => {
-    const newBadges = [...badges];
-    if (done["h1"] && !newBadges.includes("Zen Starter")) newBadges.push("Zen Starter");
-    if (done["h9"] && !newBadges.includes("Escritor Constante")) newBadges.push("Escritor Constante");
-    if (done["h8"] && !newBadges.includes("Sueño Limpio")) newBadges.push("Sueño Limpio");
-    setBadges(newBadges);
+  const checkBadges = (done: Progress) => {
+    setBadges((prev) => {
+      const out = new Set(prev);
+      if (done["h1"]) out.add("Zen Starter");
+      if (done["h9"]) out.add("Escritor Constante");
+      if (done["h8"]) out.add("Sueño Limpio");
+      return Array.from(out);
+    });
   };
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", paddingBottom: 40 }}>
-      <header style={{ position: "sticky", top: 0, background: "#fff", borderBottom: "1px solid #eee", padding: 16 }}>
-        <h1 style={{ margin: 0 }}>🌱 Ritual Bienestar Mental · Nivel 1</h1>
-        <p style={{ margin: 0, color: "#555" }}>MVP con 9 hábitos diarios, puntos e insignias</p>
+    <div className="min-h-screen bg-white text-gray-900">
+      <header className="sticky top-0 bg-white border-b p-4">
+        <h1 className="text-xl font-bold">🌱 Ritual Bienestar Mental · Nivel 1</h1>
+        <p className="text-sm text-gray-600">MVP con 9 hábitos diarios, puntos e insignias</p>
       </header>
 
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: 16 }}>
-        <div style={{ display: "flex", gap: 16, justifyContent: "space-between", border: "1px solid #eee", borderRadius: 12, padding: 16 }}>
+      <main className="max-w-3xl mx-auto p-4 space-y-8">
+        <div className="flex items-center justify-between p-4 rounded-xl border">
           <div>
-            <div style={{ fontSize: 12, color: "#555" }}>Puntos de hoy</div>
-            <div style={{ fontSize: 24, fontWeight: 700 }}>{points}</div>
+            <p className="text-sm">Puntos de hoy</p>
+            <p className="text-2xl font-bold">{points}</p>
           </div>
           <div>
-            <div style={{ fontSize: 12, color: "#555" }}>Racha</div>
-            <div style={{ fontSize: 24, fontWeight: 700 }}>{streak} 🔥</div>
+            <p className="text-sm">Racha</p>
+            <p className="text-2xl font-bold">{streak} 🔥</p>
           </div>
-          <div style={{ minWidth: 160 }}>
-            <div style={{ fontSize: 12, color: "#555" }}>Insignias</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
-              {badges.map((b, i) => (
-                <span key={i} style={{ padding: "2px 8px", borderRadius: 999, background: "#e8f5e9", fontSize: 12 }}>{b}</span>
-              ))}
-              {!badges.length && <span style={{ fontSize: 12, color: "#999" }}>Ninguna aún</span>}
+          <div>
+            <p className="text-sm">Insignias</p>
+            <div className="flex gap-2 mt-1">
+              {badges.length ? (
+                badges.map((b) => (
+                  <span key={b} className="px-2 py-1 rounded-full bg-green-100 text-xs">
+                    {b}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-gray-400">Ninguna aún</span>
+              )}
             </div>
           </div>
         </div>
 
         {SECTIONS.map((sec) => (
-          <div key={sec} style={{ marginTop: 24 }}>
-            <h2 style={{ margin: "8px 0" }}>{sec}</h2>
-            <div style={{ display: "grid", gap: 8 }}>
+          <div key={sec} className="space-y-3">
+            <h2 className="text-lg font-semibold">{sec}</h2>
+            <div className="space-y-2">
               {HABITS.filter((h) => h.section === sec).map((habit) => (
-                <label key={habit.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, border: "1px solid #eee", borderRadius: 12, cursor: "pointer" }}>
+                <label
+                  key={habit.id}
+                  className="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-gray-50"
+                >
                   <input
                     type="checkbox"
                     checked={!!progress[habit.id]}
                     onChange={() => toggleHabit(habit.id)}
-                    style={{ width: 20, height: 20 }}
+                    className="w-5 h-5"
                   />
                   <span>{habit.title}</span>
                 </label>
@@ -85,15 +113,18 @@ export default function App() {
           </div>
         ))}
 
-        <div style={{ border: "1px solid #eee", borderRadius: 12, textAlign: "center", padding: 16, marginTop: 24 }}>
-          <div style={{ fontSize: 12, color: "#555" }}>Comparte tu progreso:</div>
+        <div className="p-4 rounded-xl border text-center">
+          <p className="text-sm text-gray-600">Comparte tu progreso:</p>
           <button
-            style={{ marginTop: 8, padding: "8px 12px", border: "1px solid #ddd", borderRadius: 12 }}
+            className="mt-2 px-4 py-2 rounded-xl border hover:bg-gray-50"
             onClick={() => {
               const completed = Object.values(progress).filter(Boolean).length;
               const msg = `Hoy completé ${completed}/9 hábitos 🌱, llevo ${streak} días de racha 🔥.`;
               if (navigator.share) navigator.share({ text: msg });
-              else { navigator.clipboard.writeText(msg); alert("Copiado ✅"); }
+              else {
+                navigator.clipboard.writeText(msg);
+                alert("Copiado ✅");
+              }
             }}
           >
             📤 Compartir
