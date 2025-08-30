@@ -30,6 +30,19 @@ type Logs = Record<string, string[]>;
 
 const DAILY_TARGET = 6; // objetivo de día OK: ≥6/9 hábitos
 
+function ProgressBar({ value }: { value: number }) {
+  // value: 0..1
+  const pct = Math.max(0, Math.min(1, value));
+  return (
+    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-black transition-all"
+        style={{ width: `${Math.round(pct * 100)}%` }}
+      />
+    </div>
+  );
+}
+
 export default function App() {
   const today = todayKey();
   const [logs, setLogs] = useLocalStorage<Logs>("logs", {});
@@ -39,6 +52,8 @@ export default function App() {
   const completedCount = completedToday.size;
   const pointsToday = completedCount * 10;
   const todayIsSuccess = completedCount >= DAILY_TARGET;
+  const progressPct = pointsToday / 90; // porque el máximo son 90 puntos (9 hábitos * 10)
+
 
   // Alterna un hábito hoy
   function toggleHabit(id: string) {
@@ -96,21 +111,40 @@ export default function App() {
 
       <main className="max-w-3xl mx-auto p-4 space-y-8">
         {/* Resumen del día */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl border">
-          <div>
-            <p className="text-sm">Puntos de hoy</p>
-            <p className="text-2xl font-bold">{pointsToday}</p>
+        <div className="p-4 rounded-xl border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm">Puntos de hoy</p>
+              <p className="text-2xl font-bold">{pointsToday}</p>
+            </div>
+            <div>
+              <p className="text-sm">Completados</p>
+              <p className="text-2xl font-bold">{completedCount}/9</p>
+            </div>
+            <div>
+              <p className="text-sm">Racha</p>
+              <p className="text-2xl font-bold">{streak} 🔥</p>
+            </div>
           </div>
+
+          {/* Barra de progreso */}
+          <ProgressBar value={pointsToday / 90} />
+
+          {/* Mensaje de estado */}
+          {completedCount === 0 ? (
+            <p className="text-sm text-gray-700">
+              👋 Empieza por <strong>“Respiraciones”</strong> o por <strong>“3 prioridades”</strong>. Un minuto y ya notas efecto.
+            </p>
+          ) : todayIsSuccess ? (
+            <p className="text-sm text-green-700">✅ Objetivo del día logrado (≥6/9). ¡Estás sumando a tu racha!</p>
+          ) : (
+            <p className="text-sm text-gray-700">
+              Te faltan <strong>{Math.max(0, DAILY_TARGET - completedCount)}</strong> para lograr el objetivo de hoy (≥{DAILY_TARGET}/9).
+            </p>
+          )}
+
+          {/* Insignias (hoy) */}
           <div>
-            <p className="text-sm">Completados</p>
-            <p className="text-2xl font-bold">{completedCount}/9</p>
-          </div>
-          <div>
-            <p className="text-sm">Racha</p>
-            <p className="text-2xl font-bold">{streak} 🔥</p>
-          </div>
-          <div className="basis-full text-sm text-gray-700">{helperText}</div>
-          <div className="basis-full">
             <div className="text-sm">Insignias</div>
             <div className="flex gap-2 mt-1 flex-wrap">
               {badgesToday.length ? (
@@ -135,6 +169,7 @@ export default function App() {
                 <label
                   key={habit.id}
                   className="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-gray-50"
+                  title={completedToday.has(habit.id) ? "Marcado" : "+10 puntos al marcar"}
                 >
                   <input
                     type="checkbox"
