@@ -1,5 +1,7 @@
 // src/App.tsx
-import { useState } from "react";
+import { useMemo } from "react";
+import { useLocalStorage } from "./hooks/useLocalStorage";
+import { todayKey } from "./utils/date";
 
 type Section = "Al despertar" | "Durante el día" | "Al acostarse";
 
@@ -23,63 +25,64 @@ const HABITS: Habit[] = [
 
 const SECTIONS: Section[] = ["Al despertar", "Durante el día", "Al acostarse"];
 
-type Progress = Record<string, boolean>;
+// Estructura guardada en localStorage:
+// { "YYYY-MM-DD": ["h1","h3", ...] }
+type Logs = Record<string, string[]>;
 
-export default function MentalHabitsMVP() {
-  const [progress, setProgress] = useState<Progress>({});
-  const [streak, setStreak] = useState<number>(0);
-  const [points, setPoints] = useState<number>(0);
-  const [badges, setBadges] = useState<string[]>([]);
+export default function App() {
+  const today = todayKey();
 
-  const toggleHabit = (id: string) => {
-    setProgress((prev) => {
-      const next: Progress = { ...prev, [id]: !prev[id] };
-      const completed = Object.values(next).filter(Boolean).length;
+  // Estado persistente en localStorage
+  const [logs, setLogs] = useLocalStorage<Logs>("logs", {});
 
-      // puntos
-      setPoints(completed * 10);
+  // Conjunto de hábitos completados HOY
+  const completedToday = useMemo(() => new Set(logs[today] || []), [logs, today]);
 
-      // racha (simplificada para MVP: si hoy >=6, cuenta como día “ok”)
-      setStreak((prevStreak) => (completed >= 6 ? Math.max(prevStreak, 1) : prevStreak));
+  // Puntos (10 por hábito) y contador
+  const pointsToday = completedToday.size * 10;
+  const completedCount = completedToday.size;
 
-      // insignias
-      checkBadges(next);
-      return next;
+  // Marcar / desmarcar un hábito
+  function toggleHabit(id: string) {
+    setLogs((prev) => {
+      const set = new Set(prev[today] || []);
+      set.has(id) ? set.delete(id) : set.add(id);
+      return { ...prev, [today]: Array.from(set) };
     });
-  };
+  }
 
-  const checkBadges = (done: Progress) => {
-    setBadges((prev) => {
-      const out = new Set(prev);
-      if (done["h1"]) out.add("Zen Starter");
-      if (done["h9"]) out.add("Escritor Constante");
-      if (done["h8"]) out.add("Sueño Limpio");
-      return Array.from(out);
-    });
-  };
+  // Insignias (solo como ejemplo visual para hoy)
+  const badgesToday = useMemo(() => {
+    const out: string[] = [];
+    if (completedToday.has("h1")) out.push("Zen Starter");
+    if (completedToday.has("h8")) out.push("Sueño Limpio");
+    if (completedToday.has("h9")) out.push("Escritor Constante");
+    return out;
+  }, [completedToday]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <header className="sticky top-0 bg-white border-b p-4">
         <h1 className="text-xl font-bold">🌱 Ritual Bienestar Mental · Nivel 1</h1>
-        <p className="text-sm text-gray-600">MVP con 9 hábitos diarios, puntos e insignias</p>
+        <p className="text-sm text-gray-600">Persistencia por días (Local Storage)</p>
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-8">
+        {/* Resumen del día */}
         <div className="flex items-center justify-between p-4 rounded-xl border">
           <div>
             <p className="text-sm">Puntos de hoy</p>
-            <p className="text-2xl font-bold">{points}</p>
+            <p className="text-2xl font-bold">{pointsToday}</p>
           </div>
           <div>
-            <p className="text-sm">Racha</p>
-            <p className="text-2xl font-bold">{streak} 🔥</p>
+            <p className="text-sm">Completados</p>
+            <p className="text-2xl font-bold">{completedCount}/9</p>
           </div>
           <div>
-            <p className="text-sm">Insignias</p>
-            <div className="flex gap-2 mt-1">
-              {badges.length ? (
-                badges.map((b) => (
+            <p className="text-sm">Insignias (hoy)</p>
+            <div className="flex gap-2 mt-1 flex-wrap">
+              {badgesToday.length ? (
+                badgesToday.map((b) => (
                   <span key={b} className="px-2 py-1 rounded-full bg-green-100 text-xs">
                     {b}
                   </span>
@@ -91,6 +94,7 @@ export default function MentalHabitsMVP() {
           </div>
         </div>
 
+        {/* Listado por secciones */}
         {SECTIONS.map((sec) => (
           <div key={sec} className="space-y-3">
             <h2 className="text-lg font-semibold">{sec}</h2>
@@ -102,9 +106,10 @@ export default function MentalHabitsMVP() {
                 >
                   <input
                     type="checkbox"
-                    checked={!!progress[habit.id]}
-                    onChange={() => toggleHabit(habit.id)}
                     className="w-5 h-5"
+                    checked={completedToday.has(habit.id)}
+                    onChange={() => toggleHabit(habit.id)}
+                    aria-label={habit.title}
                   />
                   <span>{habit.title}</span>
                 </label>
@@ -113,13 +118,13 @@ export default function MentalHabitsMVP() {
           </div>
         ))}
 
+        {/* Compartir */}
         <div className="p-4 rounded-xl border text-center">
-          <p className="text-sm text-gray-600">Comparte tu progreso:</p>
+          <p className="text-sm text-gray-600">Compartir</p>
           <button
             className="mt-2 px-4 py-2 rounded-xl border hover:bg-gray-50"
             onClick={() => {
-              const completed = Object.values(progress).filter(Boolean).length;
-              const msg = `Hoy completé ${completed}/9 hábitos 🌱, llevo ${streak} días de racha 🔥.`;
+              const msg = `Hoy completé ${completedCount}/9 hábitos 🌱 (${pointsToday}/90 pts).`;
               if (navigator.share) navigator.share({ text: msg });
               else {
                 navigator.clipboard.writeText(msg);
@@ -129,6 +134,14 @@ export default function MentalHabitsMVP() {
           >
             📤 Compartir
           </button>
+        </div>
+
+        {/* (Opcional) Panel de depuración para ver lo guardado */}
+        <div className="p-4 rounded-xl border mt-2 text-xs text-gray-600">
+          <div className="font-semibold mb-1">Debug (sólo para ti)</div>
+          <div>Hoy: <code>{today}</code></div>
+          <div>Logs en memoria: <code>{JSON.stringify(logs)}</code></div>
+          <div>Completados hoy: <code>{JSON.stringify(Array.from(completedToday))}</code></div>
         </div>
       </main>
     </div>
