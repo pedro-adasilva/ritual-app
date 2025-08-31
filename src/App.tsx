@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { todayKey, addDaysKey, yesterdayKey } from "./utils/date";
 
@@ -23,10 +23,160 @@ const HABITS: Habit[] = [
   { id: "h9", title: "Escribir en diario nocturno", section: "Al acostarse" },
 ];
 
+// Detalles por hábito (no cambiamos HABITS)
+const HABIT_DETAILS: Record<
+  string,
+  {
+    consists: string;
+    benefits: string[];
+    resources: { label: string; url: string }[];
+    hint?: string;
+  }
+> = {
+  h1: {
+    consists:
+      "Nada más despertar, siéntate en la cama, cierra los ojos y haz de 3 a 5 respiraciones profundas. Inhala por la nariz contando 4, mantén 2 segundos y exhala por la boca contando 6.",
+    benefits: [
+      "Activa el sistema nervioso parasimpático (relajación).",
+      "Reduce la ansiedad matutina y la sensación de “correr desde que abres los ojos”.",
+      "Te centra en el presente antes de exponerte al móvil o las prisas.",
+    ],
+    resources: [
+      { label: "Guía de respiración diafragmática (Healthline)", url: "https://www.healthline.com/health/diaphragmatic-breathing" },
+      { label: "App: Breathwrk", url: "https://www.breathwrk.com/" },
+    ],
+    hint: "1 minuto para arrancar en calma",
+  },
+  h2: {
+    consists:
+      "Dedica 2–3 minutos a escribir tus 3 hábitos o tareas más importantes para el día. No una lista interminable, solo lo esencial.",
+    benefits: [
+      "Da claridad y dirección desde el inicio.",
+      "Previene dispersión y procrastinación.",
+      "Aumenta la probabilidad de cumplir lo importante antes que lo urgente.",
+    ],
+    resources: [
+      { label: "Método Ivy Lee", url: "https://jamesclear.com/ivy-lee" },
+      { label: "App: Todoist", url: "https://todoist.com/" },
+      { label: "Plantilla: Notion", url: "https://www.notion.so/" },
+    ],
+    hint: "3 prioridades, no más",
+  },
+  h3: {
+    consists:
+      "Busca un lugar tranquilo, siéntate y dedica 5 minutos a observar tu respiración o tus sensaciones. Si tu mente se dispersa, vuelve suavemente al presente.",
+    benefits: [
+      "Reset mental en mitad de la jornada.",
+      "Reduce el estrés acumulado.",
+      "Mejora la concentración y regula emociones.",
+    ],
+    resources: [
+      { label: "Cómo meditar en 5 minutos (Mindful.org)", url: "https://www.mindful.org/meditation/mindfulness-getting-started/" },
+      { label: "App: Insight Timer", url: "https://insighttimer.com/" },
+    ],
+    hint: "Un temporizador y listo",
+  },
+  h4: {
+    consists:
+      "Sal a dar un paseo sin auriculares ni móvil, prestando atención al entorno, a la respiración y al movimiento del cuerpo.",
+    benefits: [
+      "Mejora el estado de ánimo con luz natural.",
+      "Incrementa creatividad y reduce fatiga mental.",
+      "Refuerza salud cardiovascular e inmune.",
+    ],
+    resources: [
+      { label: "Beneficios de caminar (Harvard)", url: "https://www.health.harvard.edu/staying-healthy/5-surprising-benefits-of-walking" },
+      { label: "App: Google Fit", url: "https://www.google.com/fit/" },
+    ],
+    hint: "Salir ya, 10’ marcan el día",
+  },
+  h5: {
+    consists:
+      "Instala bloqueadores o fija límites claros para evitar el uso compulsivo de redes y noticias negativas.",
+    benefits: [
+      "Protege tu salud mental de la sobrecarga de información y la ansiedad.",
+      "Recupera horas de productividad y descanso.",
+      "Favorece actividades más nutritivas (lectura, hobbies, relaciones).",
+    ],
+    resources: [
+      { label: "App: Freedom", url: "https://freedom.to/" },
+      { label: "App: AppBlock / Digital Wellbeing", url: "https://wellbeing.google/" },
+      { label: "Qué es el doomscrolling (Psychology Today)", url: "https://www.psychologytoday.com/us/basics/doomscrolling" },
+    ],
+    hint: "Bloquea 2–3 franjas críticas",
+  },
+  h6: {
+    consists:
+      "Descansa entre 10 y 20 minutos tras el almuerzo o cuando sientas fatiga. Evita pasar de 30’ para no tener inercia del sueño.",
+    benefits: [
+      "Mejora memoria y concentración.",
+      "Aumenta alerta y reduce fatiga.",
+      "Favorece el estado de ánimo y la regulación emocional.",
+    ],
+    resources: [
+      { label: "Siestas: guía Mayo Clinic", url: "https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/napping/art-20048319" },
+      { label: "Inemuri (siesta breve consciente)", url: "https://en.wikipedia.org/wiki/Inemuri" },
+    ],
+    hint: "Pon alarma suave de 15’",
+  },
+  h7: {
+    consists:
+      "Durante la ducha, enfoca tu atención en temperatura, presión del agua y sensaciones corporales. Si tu mente se va, vuelve al presente.",
+    benefits: [
+      "Convierte un hábito rutinario en práctica de mindfulness.",
+      "Ayuda a desconectar del piloto automático.",
+      "Refuerza la conexión con el cuerpo.",
+    ],
+    resources: [
+      { label: "Mindful shower (Mindful.org)", url: "https://www.mindful.org/mindful-showers-an-easy-way-to-practice-mindfulness/" },
+      { label: "Libro: Mindfulness para principiantes (Kabat-Zinn)", url: "https://www.amazon.es/dp/8499881718" },
+    ],
+    hint: "Atiende a las sensaciones",
+  },
+  h8: {
+    consists:
+      "Apaga móvil, ordenador y tele 30 minutos antes de dormir. Sustituir por lectura, música tranquila o escritura ligera.",
+    benefits: [
+      "Mejora la calidad del sueño al reducir luz azul.",
+      "Permite al cerebro entrar en calma antes de dormir.",
+      "Crea un ritual nocturno reparador.",
+    ],
+    resources: [
+      { label: "Sleep Foundation – Higiene del sueño", url: "https://www.sleepfoundation.org/sleep-hygiene" },
+      { label: "App: f.lux / Night Shift", url: "https://justgetflux.com/" },
+    ],
+    hint: "Deja el cargador fuera del dormitorio",
+  },
+  h9: {
+    consists:
+      "Antes de dormir, escribe brevemente: cómo me siento, qué agradezco hoy, cómo he tratado mis objetivos y qué he aprendido para mañana.",
+    benefits: [
+      "Favorece autorreflexión y autocompasión.",
+      "Refuerza aprendizaje diario y gratitud.",
+      "Mejora el descanso mental al “vaciar la cabeza”.",
+    ],
+    resources: [
+      { label: "Evening Journal (Tim Ferriss)", url: "https://tim.blog/2015/01/15/productivity-hacks-for-the-motivationally-challenged/" },
+      { label: "App: Daylio", url: "https://daylio.net/" },
+    ],
+    hint: "3–5 líneas, máximo 5 minutos",
+  },
+};
+
 const SECTIONS: Section[] = ["Al despertar", "Durante el día", "Al acostarse"];
 
 // logs: { "YYYY-MM-DD": ["h1","h3", ...] }
 type Logs = Record<string, string[]>;
+
+const [open, setOpen] = useState<Set<string>>(new Set());
+
+function toggleOpen(id: string) {
+  setOpen((prev) => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+}
 
 const DAILY_TARGET = 6; // objetivo de día OK: ≥6/9 hábitos
 
@@ -165,22 +315,74 @@ export default function App() {
           <div key={sec} className="space-y-3">
             <h2 className="text-lg font-semibold">{sec}</h2>
             <div className="space-y-2">
-              {HABITS.filter((h) => h.section === sec).map((habit) => (
-                <label
-                  key={habit.id}
-                  className="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-gray-50"
-                  title={completedToday.has(habit.id) ? "Marcado" : "+10 puntos al marcar"}
-                >
-                  <input
-                    type="checkbox"
-                    className="w-5 h-5"
-                    checked={completedToday.has(habit.id)}
-                    onChange={() => toggleHabit(habit.id)}
-                    aria-label={habit.title}
-                  />
-                  <span>{habit.title}</span>
-                </label>
-              ))}
+            {HABITS.filter((h) => h.section === sec).map((habit) => {
+              const isOpen = open.has(habit.id);
+              const checked = completedToday.has(habit.id);
+              const d = HABIT_DETAILS[habit.id];
+              return (
+                <div key={habit.id} className="border rounded-xl" role="group" aria-label={habit.title}>
+                  {/* Cabecera clicable (abre/cierra) */}
+                  <button
+                    className="w-full flex items-center justify-between gap-3 p-3 text-left hover:bg-gray-50 rounded-t-xl"
+                    onClick={() => toggleOpen(habit.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Checkbox: SOLO marca/desmarca; no abre/cierra */}
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5"
+                        checked={checked}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => toggleHabit(habit.id)}
+                        aria-label={`Marcar ${habit.title}`}
+                        title={checked ? "Marcado" : "+10 puntos al marcar"}
+                      />
+                      <div>
+                        <div className="font-medium">{habit.title}</div>
+                        {d?.hint && <div className="text-xs text-gray-500">{d.hint}</div>}
+                      </div>
+                    </div>
+                    <span className="text-gray-500">{isOpen ? "▲" : "▼"}</span>
+                  </button>
+
+                  {/* Panel expandible */}
+                  {isOpen && d && (
+                    <div className="px-4 pb-4 pt-1 space-y-3">
+                      <div>
+                        <div className="text-sm font-semibold">En qué consiste</div>
+                        <p className="text-sm text-gray-700 mt-1">{d.consists}</p>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">Por qué es útil</div>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 mt-1 space-y-1">
+                          {d.benefits.map((b, i) => (
+                            <li key={i}>{b}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">Recursos</div>
+                        <ul className="list-disc pl-5 text-sm mt-1 space-y-1">
+                          {d.resources.map((r) => (
+                            <li key={r.url}>
+                              <a
+                                href={r.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-gray-800"
+                              >
+                                {r.label}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             </div>
           </div>
         ))}
