@@ -1,6 +1,6 @@
 // public/sw.js
 // 💡 cambia la versión en cada deploy importante:
-const VERSION = "v8";
+const VERSION = "v9";
 // Incluye el host para que diferentes dominios/previas no compartan caché
 const CACHE = `ritual-${VERSION}-${self.location.host}`;
 
