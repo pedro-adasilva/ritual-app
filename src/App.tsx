@@ -12,15 +12,15 @@ interface Habit {
 }
 
 const HABITS: Habit[] = [
-  { id: "h1", title: "Respiraciones conscientes al despertar", section: "Al despertar" },
-  { id: "h2", title: "Lista de 3 prioridades del día", section: "Al despertar" },
+  { id: "h1", title: "3 a 5 respiraciones conscientes seguidas", section: "Al despertar" },
+  { id: "h2", title: "Escribe 3 objetivos para tu día", section: "Al despertar" },
   { id: "h3", title: "Pausa de mindfulness (5 min)", section: "Durante el día" },
   { id: "h4", title: "Caminar 10 minutos al aire libre", section: "Durante el día" },
   { id: "h5", title: "Bloquear doomscrolling", section: "Durante el día" },
   { id: "h6", title: "Micro-siesta (10–20 min)", section: "Durante el día" },
   { id: "h7", title: "Ducha consciente", section: "Durante el día" },
   { id: "h8", title: "30 min antes sin pantallas", section: "Al acostarse" },
-  { id: "h9", title: "Escribir en diario nocturno", section: "Al acostarse" },
+  { id: "h9", title: "Escribe en tu diario", section: "Al acostarse" },
 ];
 
 // Detalles por hábito (no cambiamos HABITS)
@@ -35,17 +35,17 @@ const HABIT_DETAILS: Record<
 > = {
   h1: {
     consists:
-      "Nada más despertar, siéntate en la cama, cierra los ojos y haz de 3 a 5 respiraciones profundas. Inhala por la nariz contando 4, mantén 2 segundos y exhala por la boca contando 6.",
+      "Haz de 3 a 5 respiraciones profundas. Si no las has hecho al despertar, hazlas en cualquier momento del día.",
     benefits: [
       "Activa el sistema nervioso parasimpático (relajación).",
       "Reduce la ansiedad matutina y la sensación de “correr desde que abres los ojos”.",
       "Te centra en el presente antes de exponerte al móvil o las prisas.",
     ],
     resources: [
-      { label: "Guía de respiración diafragmática (Healthline)", url: "https://www.healthline.com/health/diaphragmatic-breathing" },
-      { label: "App: Breathwrk", url: "https://www.breathwrk.com/" },
+      { label: "Artículo: Respirar más despacio (BBC)", url: "https://www.bbc.com/mundo/vert-cap-54464360" },
+      { label: "App: Atmosphere (sonidos relajantes)", url: "https://play.google.com/store/apps/details?id=com.peakpocketstudios.atmosphere&hl=es" },
     ],
-    hint: "1 minuto para arrancar en calma",
+    hint: "¿Eres capaz de parar 1 minuto?",
   },
   h2: {
     consists:
@@ -56,9 +56,7 @@ const HABIT_DETAILS: Record<
       "Aumenta la probabilidad de cumplir lo importante antes que lo urgente.",
     ],
     resources: [
-      { label: "Método Ivy Lee", url: "https://jamesclear.com/ivy-lee" },
-      { label: "App: Todoist", url: "https://todoist.com/" },
-      { label: "Plantilla: Notion", url: "https://www.notion.so/" },
+      { label: "App: Mi diario personal", url: "https://play.google.com/store/apps/details?id=mydiary.journal.diary.diarywithlock.diaryjournal.secretdiary&hl=es_419" },
     ],
     hint: "3 prioridades, no más",
   },
@@ -254,8 +252,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <header className="sticky top-0 bg-white border-b p-4">
-        <h1 className="text-xl font-bold">🌱 Ritual Bienestar Mental · Nivel 1</h1>
-        <p className="text-sm text-gray-600">Persistencia por días + racha real</p>
+        <h1 className="text-xl font-bold">🌱 Mentally</h1>
+        <p className="text-sm text-gray-600">Mejora tus hábitos manetales</p>
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-8">
