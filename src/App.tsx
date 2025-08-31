@@ -45,7 +45,7 @@ const HABIT_DETAILS: Record<
       { label: "Artículo: Respirar más despacio (BBC)", url: "https://www.bbc.com/mundo/vert-cap-54464360" },
       { label: "App: Atmosphere (sonidos relajantes)", url: "https://play.google.com/store/apps/details?id=com.peakpocketstudios.atmosphere&hl=es" },
     ],
-    hint: "¿Eres capaz de parar 1 minuto?",
+    hint: "1 minuto",
   },
   h2: {
     consists:
@@ -58,7 +58,7 @@ const HABIT_DETAILS: Record<
     resources: [
       { label: "App: Mi diario personal", url: "https://play.google.com/store/apps/details?id=mydiary.journal.diary.diarywithlock.diaryjournal.secretdiary&hl=es_419" },
     ],
-    hint: "3 prioridades, no más",
+    hint: "2 minutos",
   },
   h3: {
     consists:
@@ -72,7 +72,7 @@ const HABIT_DETAILS: Record<
       { label: "Cómo meditar en 5 minutos (Mindful.org)", url: "https://www.mindful.org/meditation/mindfulness-getting-started/" },
       { label: "App: Insight Timer", url: "https://insighttimer.com/" },
     ],
-    hint: "Un temporizador y listo",
+    hint: "5 minutos",
   },
   h4: {
     consists:
@@ -86,7 +86,7 @@ const HABIT_DETAILS: Record<
       { label: "Beneficios de caminar (Harvard)", url: "https://www.health.harvard.edu/staying-healthy/5-surprising-benefits-of-walking" },
       { label: "App: Google Fit", url: "https://www.google.com/fit/" },
     ],
-    hint: "Salir ya, 10’ marcan el día",
+    hint: "10 minutos",
   },
   h5: {
     consists:
@@ -101,7 +101,7 @@ const HABIT_DETAILS: Record<
       { label: "App: AppBlock / Digital Wellbeing", url: "https://wellbeing.google/" },
       { label: "Qué es el doomscrolling (Psychology Today)", url: "https://www.psychologytoday.com/us/basics/doomscrolling" },
     ],
-    hint: "Bloquea 2–3 franjas críticas",
+    hint: "2 minutos",
   },
   h6: {
     consists:
@@ -115,7 +115,7 @@ const HABIT_DETAILS: Record<
       { label: "Siestas: guía Mayo Clinic", url: "https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/napping/art-20048319" },
       { label: "Inemuri (siesta breve consciente)", url: "https://en.wikipedia.org/wiki/Inemuri" },
     ],
-    hint: "Pon alarma suave de 15’",
+    hint: "10 minutos",
   },
   h7: {
     consists:
@@ -129,7 +129,7 @@ const HABIT_DETAILS: Record<
       { label: "Mindful shower (Mindful.org)", url: "https://www.mindful.org/mindful-showers-an-easy-way-to-practice-mindfulness/" },
       { label: "Libro: Mindfulness para principiantes (Kabat-Zinn)", url: "https://www.amazon.es/dp/8499881718" },
     ],
-    hint: "Atiende a las sensaciones",
+    hint: "15 minutos",
   },
   h8: {
     consists:
@@ -143,7 +143,7 @@ const HABIT_DETAILS: Record<
       { label: "Sleep Foundation – Higiene del sueño", url: "https://www.sleepfoundation.org/sleep-hygiene" },
       { label: "App: f.lux / Night Shift", url: "https://justgetflux.com/" },
     ],
-    hint: "Deja el cargador fuera del dormitorio",
+    hint: "1 minuto",
   },
   h9: {
     consists:
@@ -157,7 +157,7 @@ const HABIT_DETAILS: Record<
       { label: "Evening Journal (Tim Ferriss)", url: "https://tim.blog/2015/01/15/productivity-hacks-for-the-motivationally-challenged/" },
       { label: "App: Daylio", url: "https://daylio.net/" },
     ],
-    hint: "3–5 líneas, máximo 5 minutos",
+    hint: "5 minutos",
   },
 };
 
@@ -253,7 +253,7 @@ export default function App() {
     <div className="min-h-screen bg-white text-gray-900">
       <header className="sticky top-0 bg-white border-b p-4">
         <h1 className="text-xl font-bold">🌱 Mentally</h1>
-        <p className="text-sm text-gray-600">Mejora tus hábitos manetales</p>
+        <p className="text-sm text-gray-600">Mejora tus hábitos 🧠</p>
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-8">
