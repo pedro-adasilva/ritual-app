@@ -168,16 +168,6 @@ const SECTIONS: Section[] = ["Al despertar", "Durante el día", "Al acostarse"];
 // logs: { "YYYY-MM-DD": ["h1","h3", ...] }
 type Logs = Record<string, string[]>;
 
-const [open, setOpen] = useState<Set<string>>(new Set());
-
-function toggleOpen(id: string) {
-  setOpen((prev) => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-}
-
 const DAILY_TARGET = 6; // objetivo de día OK: ≥6/9 hábitos
 
 function ProgressBar({ value }: { value: number }) {
@@ -196,13 +186,22 @@ function ProgressBar({ value }: { value: number }) {
 export default function App() {
   const today = todayKey();
   const [logs, setLogs] = useLocalStorage<Logs>("logs", {});
+  const [open, setOpen] = useState<Set<string>>(new Set());
+
+  function toggleOpen(id: string) {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
 
   // Conjunto de hábitos completados HOY
   const completedToday = useMemo(() => new Set(logs[today] || []), [logs, today]);
   const completedCount = completedToday.size;
   const pointsToday = completedCount * 10;
   const todayIsSuccess = completedCount >= DAILY_TARGET;
-  const progressPct = pointsToday / 90; // porque el máximo son 90 puntos (9 hábitos * 10)
 
 
   // Alterna un hábito hoy
